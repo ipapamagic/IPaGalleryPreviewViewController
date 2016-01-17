@@ -148,14 +148,16 @@ class IPaImagePreviewViewController: UIViewController,UIScrollViewDelegate,UIGes
         if ratio >= viewRatio {
             imageViewWidth = viewWidth * scale
             imageViewHeight = imageViewWidth / ratio
-            imgViewLeadingConstraint.constant = 0
-            imgViewTopConstraint.constant = -max(0,(viewHeight - imageViewHeight) * 0.5)
+            contentScrollView.contentInset = UIEdgeInsets(top: max(0,(viewHeight - imageViewHeight) * 0.5), left: 0, bottom: 0, right: 0)
+//            imgViewLeadingConstraint.constant = 0
+//            imgViewTopConstraint.constant = -max(0,(viewHeight - imageViewHeight) * 0.5)
         }
         else {
             imageViewHeight = viewHeight * scale
             imageViewWidth = imageViewHeight * ratio
-            imgViewTopConstraint.constant = 0
-            imgViewLeadingConstraint.constant = -max(0,(viewWidth - imageViewWidth) * 0.5)
+            contentScrollView.contentInset = UIEdgeInsets(top: 0, left:(viewWidth - imageViewWidth) * 0.5, bottom: 0, right: 0)
+//            imgViewTopConstraint.constant = 0
+//            imgViewLeadingConstraint.constant = -max(0,(viewWidth - imageViewWidth) * 0.5)
         }
         imgViewWidthConstraint.constant = (imageViewWidth / scale)
         imgViewHeightConstraint.constant = (imageViewHeight / scale)
