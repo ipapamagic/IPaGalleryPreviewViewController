@@ -8,26 +8,26 @@
 
 import UIKit
 protocol IPaGalleryPreviewViewControllerDelegate {
-    func numberOfImagesForGallery(galleryViewController:IPaGalleryPreviewViewController) -> Int
-    func imageForGallery(galleryViewController:IPaGalleryPreviewViewController,index:Int) -> UIImage?
+    func numberOfImagesForGallery(_ galleryViewController:IPaGalleryPreviewViewController) -> Int
+    func imageForGallery(_ galleryViewController:IPaGalleryPreviewViewController,index:Int) -> UIImage?
 }
 class IPaGalleryPreviewViewController: UIViewController , UIPageViewControllerDataSource,UIPageViewControllerDelegate,UIGestureRecognizerDelegate {
     lazy var pageViewController:UIPageViewController = {
-        let pageViewController = UIPageViewController(transitionStyle: .Scroll, navigationOrientation: .Horizontal, options: nil)
+        let pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
         pageViewController.delegate = self
         pageViewController.dataSource = self
-        pageViewController.view.backgroundColor = UIColor.blackColor()
+        pageViewController.view.backgroundColor = UIColor.black
         let previewViewController = self.previewViewControllers.first!
         previewViewController.pageIndex = self.currentIndex
         previewViewController.loadingImage = self.delegate?.imageForGallery(self, index: self.currentIndex)
-        pageViewController.setViewControllers([previewViewController], direction:.Forward, animated: false, completion: nil)
+        pageViewController.setViewControllers([previewViewController], direction:.forward, animated: false, completion: nil)
         
         
         return pageViewController
     }()
     var delegate:IPaGalleryPreviewViewControllerDelegate?
     lazy var tapGestureRecognizer: UITapGestureRecognizer = {
-        let recognizer = UITapGestureRecognizer(target: self, action: "onTap:")
+        let recognizer = UITapGestureRecognizer(target: self, action: #selector(IPaGalleryPreviewViewController.onTap(_:)))
         recognizer.delegate = self
         return recognizer
     }()
@@ -35,8 +35,8 @@ class IPaGalleryPreviewViewController: UIViewController , UIPageViewControllerDa
 
         let previewViewController = IPaImagePreviewViewController()
         let previewViewController2 = IPaImagePreviewViewController()
-        self.tapGestureRecognizer.requireGestureRecognizerToFail(previewViewController.doubleTapRecognizer)
-        self.tapGestureRecognizer.requireGestureRecognizerToFail(previewViewController2.doubleTapRecognizer)
+        self.tapGestureRecognizer.require(toFail: previewViewController.doubleTapRecognizer)
+        self.tapGestureRecognizer.require(toFail: previewViewController2.doubleTapRecognizer)
         return [previewViewController,previewViewController2]
     }()
     var currentIndex = 0
@@ -45,9 +45,9 @@ class IPaGalleryPreviewViewController: UIViewController , UIPageViewControllerDa
         view.addGestureRecognizer(tapGestureRecognizer)
         pageViewController.view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(pageViewController.view)
-        let viewsDict = ["view": pageViewController.view]
-        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|[view]|",options:NSLayoutFormatOptions(rawValue: 0),metrics:nil,views:viewsDict))
-        view.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|[view]|",options:NSLayoutFormatOptions(rawValue: 0),metrics:nil,views:viewsDict))
+        let viewsDict:[String:UIView] = ["view": pageViewController.view]
+        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|[view]|",options:NSLayoutFormatOptions(rawValue: 0),metrics:nil,views:viewsDict))
+        view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|[view]|",options:NSLayoutFormatOptions(rawValue: 0),metrics:nil,views:viewsDict))
         // Do any additional setup after loading the view.
     }
     
@@ -58,10 +58,10 @@ class IPaGalleryPreviewViewController: UIViewController , UIPageViewControllerDa
     
     func reloadData() {
         let numberCount = delegate!.numberOfImagesForGallery(self)
-        var direction:UIPageViewControllerNavigationDirection = .Forward
+        var direction:UIPageViewControllerNavigationDirection = .forward
         if currentIndex >= numberCount {
             currentIndex = numberCount - 1
-            direction = .Reverse
+            direction = .reverse
         }
         if currentIndex < 0 {
             currentIndex = 0
@@ -69,7 +69,7 @@ class IPaGalleryPreviewViewController: UIViewController , UIPageViewControllerDa
         
         let viewController = pageViewController.viewControllers!.first! as! IPaImagePreviewViewController
         var nextViewController:IPaImagePreviewViewController
-        let index = previewViewControllers.indexOf(viewController)!
+        let index = previewViewControllers.index(of: viewController)!
         if index == 0 {
             nextViewController = previewViewControllers.last!
         }
@@ -83,17 +83,17 @@ class IPaGalleryPreviewViewController: UIViewController , UIPageViewControllerDa
 //        }
         pageViewController.setViewControllers([nextViewController], direction: direction, animated: true, completion: nil)
     }
-    @IBAction func onTap(sender: AnyObject) {
+    @IBAction func onTap(_ sender: AnyObject) {
         onSwitchNavigationBar()
     }
     func onSwitchNavigationBar() {
         guard let navigationController = self.navigationController else {
             return
         }
-        UIView.animateWithDuration(0.3, animations: {
+        UIView.animate(withDuration: 0.3, animations: {
             
             
-            navigationController.setNavigationBarHidden(!navigationController.navigationBarHidden, animated: true)
+            navigationController.setNavigationBarHidden(!navigationController.isNavigationBarHidden, animated: true)
             }, completion: {
                 finished in
                 self.setNeedsStatusBarAppearanceUpdate()
@@ -108,14 +108,14 @@ class IPaGalleryPreviewViewController: UIViewController , UIPageViewControllerDa
     
     //MARK : UIPageViewControllerDataSource
     
-    func pageViewController(pageViewController: UIPageViewController, viewControllerBeforeViewController viewController: UIViewController) -> UIViewController? {
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         let previewViewController = viewController as! IPaImagePreviewViewController
         var beforeViewController:IPaImagePreviewViewController?
         if previewViewController.pageIndex == 0 {
             return nil
         }
         else {
-            if let index = previewViewControllers.indexOf(previewViewController) {
+            if let index = previewViewControllers.index(of: previewViewController) {
                 if index == 0 {
                     beforeViewController = previewViewControllers.last
                 }
@@ -133,7 +133,7 @@ class IPaGalleryPreviewViewController: UIViewController , UIPageViewControllerDa
     }
     
     
-    func pageViewController(pageViewController: UIPageViewController, viewControllerAfterViewController viewController: UIViewController) -> UIViewController? {
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         let previewViewController = viewController as! IPaImagePreviewViewController
         var afterViewController:IPaImagePreviewViewController?
         let numberCount = delegate!.numberOfImagesForGallery(self)
@@ -141,7 +141,7 @@ class IPaGalleryPreviewViewController: UIViewController , UIPageViewControllerDa
             return nil
         }
         else {
-            if let index = previewViewControllers.indexOf(previewViewController) {
+            if let index = previewViewControllers.index(of: previewViewController) {
                 if index == 0 {
                     afterViewController = previewViewControllers.last
                 }
@@ -156,14 +156,14 @@ class IPaGalleryPreviewViewController: UIViewController , UIPageViewControllerDa
         }
         return nil
     }
-    func pageViewController(pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
+    func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool, previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
         if completed {
             let viewController = pageViewController.viewControllers!.first! as! IPaImagePreviewViewController
             currentIndex = viewController.pageIndex
         }
     }
     //MARK: UIGestureRecognizerDelegate
-    func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return false
     }
 }
